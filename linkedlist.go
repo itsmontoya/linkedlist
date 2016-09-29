@@ -1,7 +1,13 @@
 package linkedlist
 
 import (
-//	"fmt"
+	"math"
+	//	"fmt"
+)
+
+var (
+	//DEBUG ONLY
+	hop = 0
 )
 
 // New returns a new linked list
@@ -20,11 +26,14 @@ type LinkedList struct {
 	head int
 	tail int
 
-	s []item
+	s    []item
+	tree []int
+
+	putCnt int
 }
 
-func (ll *LinkedList) forEach(fn func(i item) (end bool)) (ended bool) {
-	i := ll.s[ll.head]
+func (ll *LinkedList) forEach(idx int, fn func(i item) (end bool)) (ended bool) {
+	i := ll.s[idx]
 	for {
 		if fn(i) {
 			return true
@@ -64,65 +73,107 @@ func (ll *LinkedList) append(i item) {
 	ll.tail = i.idx
 }
 
-// Get will get
-func (ll *LinkedList) Get(k string) (v interface{}) {
-	ll.ForEach(func(ik string, iv interface{}) (end bool) {
-		if ik != k {
+func (ll *LinkedList) getIndex(k string) (idx int, ok bool) {
+	for _, ii := range ll.tree {
+		hop++
+		key := ll.s[ii].key
+
+		switch {
+		case k > key:
+			idx = ii
+		case k == key:
+			idx = ii
+			ok = true
 			return
+		case k < key:
+			break
 		}
 
-		v = iv
-		end = true
+	}
+
+	ll.forEach(idx, func(i item) (end bool) {
+		hop++
+		idx = i.idx
+
+		switch {
+		case k > i.key:
+		case k == i.key:
+			ok = true
+			end = true
+		case k < i.key:
+			end = true
+		}
+
 		return
 	})
 
 	return
 }
 
-// Put will put
-func (ll *LinkedList) Put(k string, v interface{}) {
-	if ll.head == -1 {
-		ll.putFirst(k, v)
+// Get will get
+func (ll *LinkedList) Get(k string) (v interface{}) {
+	idx, ok := ll.getIndex(k)
+	if !ok {
 		return
 	}
 
-	if k < ll.s[ll.head].key {
-		ll.prepend(newItem(k, v))
-		return
+	v = ll.s[idx].val
+	//	fmt.Println("GET: Hops..", k, hop)
+	hop = 0
+	return
+}
+
+// Put will put
+func (ll *LinkedList) Put(k string, v interface{}) {
+	var (
+		idx int
+		ok  bool
+		ni  item
+		ri  item
+	)
+
+	if ll.head == -1 {
+		ll.putFirst(k, v)
+		ll.buildTree()
+		goto END
 	}
 
 	if k > ll.s[ll.tail].key {
 		ll.append(newItem(k, v))
-		return
+		goto END
 	}
 
-	ll.forEach(func(i item) (end bool) {
-		if k > i.key {
-			return
-		}
+	if k < ll.s[ll.head].key {
+		ll.prepend(newItem(k, v))
+		goto END
+	}
 
-		end = true
-		if k == i.key {
-			ll.s[i.idx].val = v
-			return
-		}
+	if idx, ok = ll.getIndex(k); ok {
+		ll.s[idx].val = v
+		goto END
+	}
 
-		ni := newItem(k, v)
-		ni.idx = len(ll.s)
-		ni.next = i.idx
-		ni.prev = i.prev
+	ri = ll.s[idx]
+	ni = newItem(k, v)
 
-		ll.s = append(ll.s, ni)
-		ll.s[i.prev].next = ni.idx
-		ll.s[i.idx].prev = ni.idx
+	ni.idx = len(ll.s)
+	ni.next = idx
+	ni.prev = ri.prev
 
-		return
-	})
+	ll.s = append(ll.s, ni)
+	ll.s[ri.prev].next = ni.idx
+	ll.s[ri.idx].prev = ni.idx
+
+END:
+	if ll.putCnt++; ll.putCnt == 32 {
+		ll.buildTree()
+	}
+	hop = 0
 }
 
 // ForEach will iterate through each item until it reaches the end OR the end boolean is returned as true
 func (ll *LinkedList) ForEach(fn func(k string, v interface{}) (end bool)) (ended bool) {
-	ll.forEach(func(i item) (end bool) {
+	ll.forEach(ll.head, func(i item) (end bool) {
 		return fn(i.key, i.val)
 	})
 
@@ -145,4 +196,33 @@ type item struct {
 	prev int
 	next int
 	idx  int
+}
+
+func (ll *LinkedList) buildTree() {
+	var (
+		n    int
+		tree []int
+	)
+
+	l := len(ll.s)
+	chunks := int(math.Sqrt(float64(l)))
+	chunkSize := l / chunks
+
+	ll.forEach(0, func(i item) (end bool) {
+		if n == 0 {
+			tree = append(tree, i.idx)
+		}
+
+		if n == chunkSize {
+			n = 0
+			return
+		}
+
+		n++
+		return
+	})
+
+	ll.tree = tree
+	ll.putCnt = 0
+	return
 }
