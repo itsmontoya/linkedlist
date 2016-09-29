@@ -29,16 +29,17 @@ func TestMain(m *testing.M) {
 func TestBasic(t *testing.T) {
 	var (
 		val interface{}
-		ll  = New()
+		cnt int64 = 1024 * 1024
+		ll        = New(int(cnt))
 	)
 
-	sl := getSorted(1024)
+	sl := getSorted(cnt)
 
 	head := sl[0]
 	mid := sl[len(sl)/2]
 	tail := sl[len(sl)-1]
 
-	for _, kv := range sl {
+	for i, kv := range sl {
 		ll.Put(kv.Key, kv.Val)
 	}
 
@@ -75,7 +76,7 @@ func TestMedium(t *testing.T) {
 
 func BenchmarkPut(b *testing.B) {
 	b.StopTimer()
-	ll := New()
+	ll := New(32)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
@@ -179,7 +180,7 @@ func BenchmarkMapForEach(b *testing.B) {
 }
 
 func getPopulatedLL() *LinkedList {
-	ll := New()
+	ll := New(32)
 
 	for _, kv := range simpleTest {
 		ll.Put(kv.Key, kv.Val)
@@ -210,7 +211,7 @@ func getSorted(n int64) (s []kv) {
 	return
 }
 
-func timed(name string, fn func()) (duration int64) {
+func timedFn(name string, fn func()) (duration int64) {
 	s := time.Now().UnixNano()
 	fn()
 	e := time.Now().UnixNano()
@@ -232,42 +233,42 @@ func getRand(n int64) (s []kv) {
 }
 
 func comparisons() {
-	ll := New()
+	ll := New(32)
 	m := make(map[string]interface{})
 	example := getSorted(1024 * 1024)
 	randExample := getRand(1024 * 12)
 
 	fmt.Println("Putting (sorted):")
-	timed("ll", func() {
+	timedFn("ll", func() {
 		for _, kv := range example {
 			ll.Put(kv.Key, kv.Val)
 		}
 	})
 
-	timed("map", func() {
+	timedFn("map", func() {
 		for _, kv := range example {
 			m[kv.Key] = kv.Val
 		}
 	})
 
-	ll = New()
+	ll = New(32)
 	m = make(map[string]interface{})
 	fmt.Print("\nPutting (random):\n")
 
-	timed("ll", func() {
+	timedFn("ll", func() {
 		for _, kv := range randExample {
 			ll.Put(kv.Key, kv.Val)
 		}
 	})
 
-	timed("map", func() {
+	timedFn("map", func() {
 		for _, kv := range randExample {
 			m[kv.Key] = kv.Val
 		}
 	})
 
 	fmt.Print("\nIteration:\n")
-	timed("ll", func() {
+	timedFn("ll", func() {
 		ll.ForEach(func(k string, v interface{}) (end bool) {
 			setKey = k
 			setValue = v
@@ -275,7 +276,7 @@ func comparisons() {
 		})
 	})
 
-	timed("map", func() {
+	timedFn("map", func() {
 		for k, v := range m {
 			setKey = k
 			setValue = v

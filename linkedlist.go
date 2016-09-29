@@ -1,8 +1,7 @@
 package linkedlist
 
 import (
-	"math"
-	//	"fmt"
+//"fmt"
 )
 
 var (
@@ -11,12 +10,13 @@ var (
 )
 
 // New returns a new linked list
-func New() (ll *LinkedList) {
+func New(sz int) (ll *LinkedList) {
 	ll = &LinkedList{
 		head: -1,
 		tail: -1,
 
-		s: make([]item, 0, 32),
+		s:        make([]item, 0, sz),
+		nextGrow: sz * 2,
 	}
 	return
 }
@@ -26,10 +26,11 @@ type LinkedList struct {
 	head int
 	tail int
 
-	s    []item
-	tree []int
+	s []item
+	t tree
 
-	putCnt int
+	nextGrow int
+	putCnt   int
 }
 
 func (ll *LinkedList) forEach(idx int, fn func(i item) (end bool)) (ended bool) {
@@ -74,21 +75,25 @@ func (ll *LinkedList) append(i item) {
 }
 
 func (ll *LinkedList) getIndex(k string) (idx int, ok bool) {
-	for _, ii := range ll.tree {
-		hop++
-		key := ll.s[ii].key
+	var bi int
+	for _, b := range ll.t {
+		for ; bi < len(b); bi++ {
+			lf := b[bi]
+			hop++
+			key := ll.s[lf.val].key
 
-		switch {
-		case k > key:
-			idx = ii
-		case k == key:
-			idx = ii
-			ok = true
-			return
-		case k < key:
-			break
+			switch {
+			case k > key:
+				idx = lf.val
+				bi = lf.idx
+			case k == key:
+				idx = lf.val
+				ok = true
+				return
+			case k < key:
+				break
+			}
 		}
-
 	}
 
 	ll.forEach(idx, func(i item) (end bool) {
@@ -118,7 +123,7 @@ func (ll *LinkedList) Get(k string) (v interface{}) {
 	}
 
 	v = ll.s[idx].val
-	//	fmt.Println("GET: Hops..", k, hop)
+	//fmt.Println("GET: Hops..", k, hop)
 	hop = 0
 	return
 }
@@ -165,8 +170,9 @@ func (ll *LinkedList) Put(k string, v interface{}) {
 	ll.s[ri.idx].prev = ni.idx
 
 END:
-	if ll.putCnt++; ll.putCnt == 32 {
+	if ll.putCnt++; ll.putCnt == ll.nextGrow {
 		ll.buildTree()
+		ll.nextGrow *= 2
 	}
 	hop = 0
 }
@@ -199,30 +205,5 @@ type item struct {
 }
 
 func (ll *LinkedList) buildTree() {
-	var (
-		n    int
-		tree []int
-	)
-
-	l := len(ll.s)
-	chunks := int(math.Sqrt(float64(l)))
-	chunkSize := l / chunks
-
-	ll.forEach(0, func(i item) (end bool) {
-		if n == 0 {
-			tree = append(tree, i.idx)
-		}
-
-		if n == chunkSize {
-			n = 0
-			return
-		}
-
-		n++
-		return
-	})
-
-	ll.tree = tree
-	ll.putCnt = 0
-	return
+	ll.t = newTree(ll)
 }
