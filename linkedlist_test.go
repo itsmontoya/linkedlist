@@ -2,11 +2,14 @@ package linkedlist
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/boltdb/bolt"
 )
 
 var (
@@ -14,6 +17,8 @@ var (
 
 	setKey   string
 	setValue interface{}
+
+	bdb *bolt.DB
 )
 
 type kv struct {
@@ -22,7 +27,27 @@ type kv struct {
 }
 
 func TestMain(m *testing.M) {
+	var (
+		tmpDir string
+		err    error
+	)
+
+	if tmpDir, err = ioutil.TempDir("", "linkedList_test_bolt"); err != nil {
+		panic(err)
+	}
+
+	if bdb, err = bolt.Open("my.db", 0600, nil); err != nil {
+		panic(err)
+	}
+
+	bdb.Update(func(tx *bolt.Tx) (err error) {
+		tx.CreateBucket([]byte("test"))
+		return
+	})
+
 	sc := m.Run()
+	bdb.Close()
+	os.RemoveAll(tmpDir)
 	os.Exit(sc)
 }
 
@@ -39,7 +64,7 @@ func TestBasic(t *testing.T) {
 	mid := sl[len(sl)/2]
 	tail := sl[len(sl)-1]
 
-	for i, kv := range sl {
+	for _, kv := range sl {
 		ll.Put(kv.Key, kv.Val)
 	}
 
@@ -100,6 +125,28 @@ func BenchmarkMapPut(b *testing.B) {
 	}
 
 	b.ReportAllocs()
+}
+
+func BenchmarkBoltPut(b *testing.B) {
+	b.StopTimer()
+	bdb.Update(func(tx *bolt.Tx) (err error) {
+		bkt := tx.Bucket([]byte("test"))
+		b.StartTimer()
+
+		for i := 0; i < b.N; i++ {
+			for _, kv := range simpleTest {
+				if idx, ok := kv.Val.(int64); ok {
+					bkt.Put([]byte(kv.Key), []byte(strconv.FormatInt(idx, 10)))
+				} else {
+					fmt.Println("NOT OK", kv.Val)
+				}
+			}
+		}
+
+		b.ReportAllocs()
+
+		return
+	})
 }
 
 func BenchmarkGet(b *testing.B) {

@@ -1,9 +1,5 @@
 package linkedlist
 
-import (
-//"fmt"
-)
-
 var (
 	//DEBUG ONLY
 	hop = 0
@@ -123,7 +119,6 @@ func (ll *LinkedList) Get(k string) (v interface{}) {
 	}
 
 	v = ll.s[idx].val
-	//fmt.Println("GET: Hops..", k, hop)
 	hop = 0
 	return
 }
