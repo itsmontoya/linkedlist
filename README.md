@@ -23,5 +23,51 @@ BenchmarkMapPrepend-4          5000000         341 ns/op         106 B/op      1
 
 ## Usage
 ```go
-// Need to write this still
+package main
+
+import (
+	"fmt"
+
+	"github.com/itsmontoya/linkedlist"
+)
+
+func main() {
+	helloWorld()
+	numbers()
+}
+
+func helloWorld() {
+	l := linkedlist.New(32, linkedlist.ActionGrow)
+	l.Append("hello")
+	l.Append("world!")
+
+	rv := l.Reduce(func(acc, val interface{}) (sum interface{}) {
+		if accV, ok := acc.(string); ok {
+			return accV + " " + val.(string)
+		}
+
+		return val
+	})
+
+	fmt.Println(rv)
+}
+
+func numbers() {
+	l := linkedlist.New(32, linkedlist.ActionGrow)
+	l.Append(0)
+	l.Append(1)
+	l.Append(2)
+	l.Append(3)
+	l.Append(4)
+
+	for _, val := range l.Map(doubleNumber) {
+		fmt.Println(val)
+	}
+}
+
+func doubleNumber(val interface{}) (nval interface{}) {
+	nval = val.(int) * 2
+	return
+}
+
 ```
