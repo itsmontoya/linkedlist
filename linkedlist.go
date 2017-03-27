@@ -1,11 +1,6 @@
 package linkedlist
 
-import (
-	"sync"
-	"sync/atomic"
-
-	"github.com/missionMeteora/toolkit/errors"
-)
+import "sync"
 
 // New will return a new linked list
 func New(cap int32, a Action) *LinkedList {
@@ -24,13 +19,8 @@ type LinkedList struct {
 
 	a Action
 
-	len    int32
-	cap    int32
-	closed int32
-}
-
-func (l *LinkedList) isClosed() bool {
-	return atomic.LoadInt32(&l.closed) == 1
+	len int32
+	cap int32
 }
 
 func (l *LinkedList) read(fn func()) {
@@ -108,11 +98,6 @@ func (l *LinkedList) popTail() (n *Node) {
 // Note: If returned Node is nil, append was unsuccessful
 func (l *LinkedList) Prepend(val interface{}) (n *Node) {
 	l.write(func() {
-		if l.isClosed() {
-			// Cannot prepend a closed list, return early
-			return
-		}
-
 		if l.len == l.cap && !l.growAction(false) {
 			// We weren't able to grow successfully, return early
 			return
@@ -139,11 +124,6 @@ func (l *LinkedList) Prepend(val interface{}) (n *Node) {
 // Note: If returned Node is nil, append was unsuccessful
 func (l *LinkedList) Append(val interface{}) (n *Node) {
 	l.write(func() {
-		if l.isClosed() {
-			// Cannot prepend a closed list, return early
-			return
-		}
-
 		if l.len == l.cap && !l.growAction(true) {
 			// We weren't able to grow successfully, return early
 			return
@@ -270,21 +250,6 @@ func (l *LinkedList) Len() (n int32) {
 func (l *LinkedList) Cap() (n int32) {
 	l.read(func() {
 		n = l.cap
-	})
-
-	return
-}
-
-// Close will attempt to close the linked list
-func (l *LinkedList) Close() (err error) {
-	if !atomic.CompareAndSwapInt32(&l.closed, 0, 1) {
-		return errors.ErrIsClosed
-	}
-
-	l.write(func() {
-		// Break the chain, release to be GC'd
-		l.head = nil
-		l.tail = nil
 	})
 
 	return
