@@ -2,14 +2,6 @@ package linkedlist
 
 import "sync"
 
-// New will return a new linked list
-func New(cap int32, a Action) *LinkedList {
-	return &LinkedList{
-		a:   a,
-		cap: cap,
-	}
-}
-
 // LinkedList is a simple doubly-linked list
 type LinkedList struct {
 	mux sync.RWMutex
@@ -17,10 +9,7 @@ type LinkedList struct {
 	head *Node
 	tail *Node
 
-	a Action
-
 	len int32
-	cap int32
 }
 
 func (l *LinkedList) read(fn func()) {
@@ -33,27 +22,6 @@ func (l *LinkedList) write(fn func()) {
 	l.mux.Lock()
 	fn()
 	l.mux.Unlock()
-}
-
-// growAction will grow the list. Returned boolean will indicate success of growth
-func (l *LinkedList) growAction(append bool) (ok bool) {
-	switch l.a {
-	case ActionReject:
-		// List rejects on full, return
-		return
-	case ActionGrow:
-		// List grows on full, double capacity
-		l.cap *= 2
-	case ActionPop:
-		// List pops on full, pop accordingly
-		if append {
-			l.popHead()
-		} else {
-			l.popTail()
-		}
-	}
-
-	return true
 }
 
 // popHead will pop the head
@@ -98,11 +66,6 @@ func (l *LinkedList) popTail() (n *Node) {
 // Note: If returned Node is nil, append was unsuccessful
 func (l *LinkedList) Prepend(val interface{}) (n *Node) {
 	l.write(func() {
-		if l.len == l.cap && !l.growAction(false) {
-			// We weren't able to grow successfully, return early
-			return
-		}
-
 		n = newNode(l, nil, l.head, val)
 
 		if l.head != nil {
@@ -124,11 +87,6 @@ func (l *LinkedList) Prepend(val interface{}) (n *Node) {
 // Note: If returned Node is nil, append was unsuccessful
 func (l *LinkedList) Append(val interface{}) (n *Node) {
 	l.write(func() {
-		if l.len == l.cap && !l.growAction(true) {
-			// We weren't able to grow successfully, return early
-			return
-		}
-
 		n = newNode(l, l.tail, nil, val)
 
 		if l.tail != nil {
@@ -241,15 +199,6 @@ func (l *LinkedList) Reduce(fn ReduceFn) (sum interface{}) {
 func (l *LinkedList) Len() (n int32) {
 	l.read(func() {
 		n = l.len
-	})
-
-	return
-}
-
-// Cap will return the current cap of the linked list
-func (l *LinkedList) Cap() (n int32) {
-	l.read(func() {
-		n = l.cap
 	})
 
 	return
