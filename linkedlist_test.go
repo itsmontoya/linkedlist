@@ -5,138 +5,49 @@ import (
 	"testing"
 )
 
-func TestReject(t *testing.T) {
-	var err error
-	l := New(4, ActionReject)
-	if err = testAppend(l, 0, true); err != nil {
+func TestLinkedList(t *testing.T) {
+	var (
+		l   LinkedList
+		err error
+	)
+
+	if err = testAppend(&l, 0, true); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = testAppend(l, 1, true); err != nil {
+	if err = testAppend(&l, 1, true); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = testAppend(l, 2, true); err != nil {
+	if err = testAppend(&l, 2, true); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = testAppend(l, 3, true); err != nil {
+	if err = testAppend(&l, 3, true); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = testAppend(l, 4, false); err != nil {
+	if err = testAppend(&l, 4, true); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = testAppend(l, 5, false); err != nil {
+	if err = testAppend(&l, 5, true); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = testIteration(l, 0); err != nil {
+	if err = testIteration(&l, 0); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = testMap(l, 0); err != nil {
+	if err = testMap(&l, 0); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = testFilter(l, 0, true); err != nil {
+	if err = testFilter(&l, 0, true); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = testReduce(l, 0); err != nil {
-		t.Fatal(err)
-	}
-
-	return
-}
-
-func TestPop(t *testing.T) {
-	var err error
-	l := New(4, ActionPop)
-	if err = testAppend(l, 0, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(l, 1, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(l, 2, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(l, 3, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(l, 4, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(l, 5, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testIteration(l, 2); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testMap(l, 2); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testFilter(l, 0, false); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testReduce(l, 2); err != nil {
-		t.Fatal(err)
-	}
-
-	return
-}
-
-func TestGrow(t *testing.T) {
-	var err error
-	l := New(4, ActionGrow)
-	if err = testAppend(l, 0, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(l, 1, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(l, 2, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(l, 3, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(l, 4, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(l, 5, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testIteration(l, 0); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testMap(l, 0); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testFilter(l, 0, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testReduce(l, 0); err != nil {
+	if err = testReduce(&l, 0); err != nil {
 		t.Fatal(err)
 	}
 
@@ -243,7 +154,7 @@ func testReduce(l *LinkedList, start int) (err error) {
 }
 
 func BenchmarkListAppend(b *testing.B) {
-	l := New(32, ActionGrow)
+	var l LinkedList
 	for i := 0; i < b.N; i++ {
 		l.Append(i)
 	}
@@ -270,7 +181,7 @@ func BenchmarkMapAppend(b *testing.B) {
 }
 
 func BenchmarkListPrepend(b *testing.B) {
-	l := New(32, ActionGrow)
+	var l LinkedList
 	for i := 0; i < b.N; i++ {
 		l.Prepend(i)
 	}
