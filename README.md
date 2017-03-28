@@ -10,24 +10,24 @@ LinkedList is a simple doubly linked-list implementation which offers:
 
 ## Benchmarks
 ```bash
-## Append benchmarks
-# Generic list
+# Generic LinkedList
 BenchmarkListAppend-4          10000000         153 ns/op          40 B/op      2 allocs/op
-# Typed list (int)
+BenchmarkListPrepend-4         10000000         158 ns/op          40 B/op      2 allocs/op
+
+# Typed (int) LinkedList
 BenchmarkIntListAppend-4       20000000         119 ns/op          32 B/op      1 allocs/op
+BenchmarkIntListPrepend-4      10000000         121 ns/op          32 B/op      1 allocs/op
+
 # Standard library
 BenchmarkStdListAppend-4       10000000         246 ns/op          56 B/op      2 allocs/op
-BenchmarkSliceAppend-4          3000000         428 ns/op          98 B/op      1 allocs/op
-BenchmarkMapAppend-4            5000000         322 ns/op         106 B/op      1 allocs/op
-
-## Prepend benchmarks
-# Generic list
-BenchmarkListPrepend-4         10000000         158 ns/op          40 B/op      2 allocs/op
-# Typed list (int)
-BenchmarkIntListPrepend-4      10000000         121 ns/op          32 B/op      1 allocs/op
-# Standard library
 BenchmarkStdListPrepend-4      10000000         254 ns/op          56 B/op      2 allocs/op
+
+# Slice
+BenchmarkSliceAppend-4          3000000         428 ns/op          98 B/op      1 allocs/op
 BenchmarkSlicePrepend-4           30000      381157 ns/op      243917 B/op      3 allocs/op
+
+# Map
+BenchmarkMapAppend-4            5000000         322 ns/op         106 B/op      1 allocs/op
 BenchmarkMapPrepend-4           5000000         346 ns/op         106 B/op      1 allocs/op
 ```
 
