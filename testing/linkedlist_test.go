@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	. "github.com/itsmontoya/linkedlist"
+	intlist "github.com/itsmontoya/linkedlist/typed/int"
 	"github.com/joeshaw/gengen/generic"
 )
 
@@ -151,6 +152,15 @@ func BenchmarkListAppend(b *testing.B) {
 	b.ReportAllocs()
 }
 
+func BenchmarkIntListAppend(b *testing.B) {
+	var l intlist.LinkedList
+	for i := 0; i < b.N; i++ {
+		l.Append(i)
+	}
+
+	b.ReportAllocs()
+}
+
 func BenchmarkSliceAppend(b *testing.B) {
 	s := make([]generic.T, 0, 32)
 	for i := 0; i < b.N; i++ {
@@ -171,6 +181,15 @@ func BenchmarkMapAppend(b *testing.B) {
 
 func BenchmarkListPrepend(b *testing.B) {
 	var l LinkedList
+	for i := 0; i < b.N; i++ {
+		l.Prepend(i)
+	}
+
+	b.ReportAllocs()
+}
+
+func BenchmarkIntListPrepend(b *testing.B) {
+	var l intlist.LinkedList
 	for i := 0; i < b.N; i++ {
 		l.Prepend(i)
 	}
