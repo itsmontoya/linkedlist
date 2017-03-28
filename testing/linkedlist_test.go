@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	. "github.com/itsmontoya/linkedlist"
+	"github.com/joeshaw/gengen/generic"
 )
 
 func TestLinkedList(t *testing.T) {
@@ -47,7 +48,7 @@ func TestMapFilterReduce(t *testing.T) {
 func testIteration(l *LinkedList, start int) (err error) {
 	cnt := start
 
-	l.ForEach(nil, func(_ *Node, val interface{}) bool {
+	l.ForEach(nil, func(_ *Node, val generic.T) bool {
 		if val.(int) != cnt {
 			err = fmt.Errorf("invalid value, expected %d and received %d", cnt, val)
 			return true
@@ -59,7 +60,7 @@ func testIteration(l *LinkedList, start int) (err error) {
 
 	cnt--
 
-	l.ForEachRev(nil, func(_ *Node, val interface{}) bool {
+	l.ForEachRev(nil, func(_ *Node, val generic.T) bool {
 		if val.(int) != cnt {
 			err = fmt.Errorf("invalid value, expected %d and received %d", cnt, val)
 			return true
@@ -73,7 +74,7 @@ func testIteration(l *LinkedList, start int) (err error) {
 }
 
 func testMap(l *LinkedList, start int) (err error) {
-	list := l.Map(func(val interface{}) (nval interface{}) {
+	list := l.Map(func(val generic.T) (nval generic.T) {
 		nval = val.(int) * 2
 		return
 	}).Slice()
@@ -90,7 +91,7 @@ func testMap(l *LinkedList, start int) (err error) {
 }
 
 func testFilter(l *LinkedList, tgt int, expected bool) (err error) {
-	list := l.Filter(func(val interface{}) (ok bool) {
+	list := l.Filter(func(val generic.T) (ok bool) {
 		return val.(int) == tgt
 	}).Slice()
 
@@ -109,7 +110,7 @@ func testFilter(l *LinkedList, tgt int, expected bool) (err error) {
 func testReduce(l *LinkedList, start int) (err error) {
 	var cv int
 	len := int(l.Len())
-	val := l.Reduce(func(acc, val interface{}) (sum interface{}) {
+	val := l.Reduce(func(acc, val generic.T) (sum generic.T) {
 		accV, _ := acc.(int)
 		sum = accV + val.(int)
 		return
@@ -126,16 +127,16 @@ func testReduce(l *LinkedList, start int) (err error) {
 	return
 }
 
-func testAddOne(val interface{}) (nval interface{}) {
+func testAddOne(val generic.T) (nval generic.T) {
 	nval = val.(int) + 1
 	return
 }
 
-func testIsEven(val interface{}) (ok bool) {
+func testIsEven(val generic.T) (ok bool) {
 	return val.(int)%2 == 0
 }
 
-func testAddInts(acc, val interface{}) (sum interface{}) {
+func testAddInts(acc, val generic.T) (sum generic.T) {
 	accV, _ := acc.(int)
 	sum = accV + val.(int)
 	return
@@ -151,7 +152,7 @@ func BenchmarkListAppend(b *testing.B) {
 }
 
 func BenchmarkSliceAppend(b *testing.B) {
-	s := make([]interface{}, 0, 32)
+	s := make([]generic.T, 0, 32)
 	for i := 0; i < b.N; i++ {
 		s = append(s, i)
 	}
@@ -160,7 +161,7 @@ func BenchmarkSliceAppend(b *testing.B) {
 }
 
 func BenchmarkMapAppend(b *testing.B) {
-	s := make(map[int]interface{}, 32)
+	s := make(map[int]generic.T, 32)
 	for i := 0; i < b.N; i++ {
 		s[i] = i
 	}
@@ -178,16 +179,16 @@ func BenchmarkListPrepend(b *testing.B) {
 }
 
 func BenchmarkSlicePrepend(b *testing.B) {
-	s := make([]interface{}, 0, 32)
+	s := make([]generic.T, 0, 32)
 	for i := 0; i < b.N; i++ {
-		s = append([]interface{}{i}, s...)
+		s = append([]generic.T{i}, s...)
 	}
 
 	b.ReportAllocs()
 }
 
 func BenchmarkMapPrepend(b *testing.B) {
-	s := make(map[int]interface{}, 32)
+	s := make(map[int]generic.T, 32)
 	for i := 0; i < b.N; i++ {
 		s[i] = i
 	}
