@@ -54,6 +54,22 @@ func TestLinkedList(t *testing.T) {
 	return
 }
 
+func TestMapFilterReduce(t *testing.T) {
+	var l LinkedList
+	l.Append(0)
+	l.Append(1)
+	l.Append(2)
+	l.Append(3)
+	l.Append(4)
+	l.Append(5)
+	l.Append(6)
+
+	val := l.Map(testAddOne).Filter(testIsEven).Reduce(testAddInts)
+	if val != 12 {
+		t.Fatalf("expected %v and received %v", 12, val)
+	}
+}
+
 func testAppend(l *LinkedList, val int, expectValue bool) (err error) {
 	n := l.Append(val)
 	if !expectValue && n == nil {
@@ -150,6 +166,21 @@ func testReduce(l *LinkedList, start int) (err error) {
 		err = fmt.Errorf("invalid value, expected %d and received %d", cv, val)
 	}
 
+	return
+}
+
+func testAddOne(val interface{}) (nval interface{}) {
+	nval = val.(int) + 1
+	return
+}
+
+func testIsEven(val interface{}) (ok bool) {
+	return val.(int)%2 == 0
+}
+
+func testAddInts(acc, val interface{}) (sum interface{}) {
+	accV, _ := acc.(int)
+	sum = accV + val.(int)
 	return
 }
 
