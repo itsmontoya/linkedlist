@@ -1,8 +1,10 @@
-package linkedlist
+package main
 
 import (
 	"fmt"
 	"testing"
+
+	. "github.com/itsmontoya/linkedlist"
 )
 
 func TestLinkedList(t *testing.T) {
