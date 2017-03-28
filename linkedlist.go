@@ -63,10 +63,16 @@ func (l *LinkedList) append(val interface{}) (n *Node) {
 func (l *LinkedList) remove(n *Node) {
 	if n.prev != nil {
 		n.prev.next = n.next
+	} else {
+		l.head = n.next
+		l.head.prev = nil
 	}
 
 	if n.next != nil {
 		n.next.prev = n.prev
+	} else {
+		l.tail = n.prev
+		l.tail.next = nil
 	}
 
 	n.prev = nil
@@ -76,18 +82,20 @@ func (l *LinkedList) remove(n *Node) {
 
 // forEach will iterate through each Node within the linked list
 func (l *LinkedList) forEach(n *Node, fn ForEachFn) (ended bool) {
+	var nn *Node
 	if n == nil {
 		// Provided Node is nil, set to head
 		n = l.head
 	}
 
 	for n != nil {
+		nn = n.next
 		if fn(n, n.val) {
 			ended = true
 			return
 		}
 
-		n = n.next
+		n = nn
 	}
 
 	return
