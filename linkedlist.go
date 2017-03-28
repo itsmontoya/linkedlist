@@ -1,12 +1,21 @@
 package linkedlist
 
+//go:generate genny -in=$GOFILE -out=typed/int/$GOFILE gen "Generic=int"
+//go:generate genny -in=$GOFILE -out=typed/int32/$GOFILE gen "Generic=int32"
+//go:generate genny -in=$GOFILE -out=typed/int64/$GOFILE gen "Generic=int64"
+//go:generate genny -in=$GOFILE -out=typed/string/$GOFILE gen "Generic=string"
+//go:generate genny -in=$GOFILE -out=typed/byteslice/$GOFILE gen "Generic=[]byte"
+
 import (
 	"sync"
 
-	"github.com/joeshaw/gengen/generic"
+	"github.com/cheekybits/genny"
 )
 
-var zeroValue generic.T
+var zero Generic
+
+// Generic is a generic value type
+type Generic generic.Type
 
 // LinkedList is a simple doubly-linked list
 type LinkedList struct {
@@ -32,7 +41,7 @@ func (l *LinkedList) write(fn func()) {
 }
 
 // prepend will prepend the list with a value, the reference Node is Returned
-func (l *LinkedList) prepend(val generic.T) (n *Node) {
+func (l *LinkedList) prepend(val Generic) (n *Node) {
 	n = newNode(nil, l.head, val)
 
 	if l.head != nil {
@@ -49,7 +58,7 @@ func (l *LinkedList) prepend(val generic.T) (n *Node) {
 }
 
 // append will append the list with a value, the reference Node is Returned
-func (l *LinkedList) append(val generic.T) (n *Node) {
+func (l *LinkedList) append(val Generic) (n *Node) {
 	n = newNode(l.tail, nil, val)
 
 	if l.tail != nil {
@@ -83,7 +92,7 @@ func (l *LinkedList) remove(n *Node) {
 
 	n.prev = nil
 	n.next = nil
-	n.val = zeroValue
+	n.val = zero
 }
 
 // forEach will iterate through each Node within the linked list
@@ -127,7 +136,7 @@ func (l *LinkedList) forEachRev(n *Node, fn ForEachFn) (ended bool) {
 }
 
 // Prepend will prepend the list with a value, the reference Node is Returned
-func (l *LinkedList) Prepend(vals ...generic.T) {
+func (l *LinkedList) Prepend(vals ...Generic) {
 	l.write(func() {
 		for _, val := range vals {
 			l.prepend(val)
@@ -138,7 +147,7 @@ func (l *LinkedList) Prepend(vals ...generic.T) {
 }
 
 // Append will append the list with a value, the reference Node is Returned
-func (l *LinkedList) Append(vals ...generic.T) {
+func (l *LinkedList) Append(vals ...Generic) {
 	l.write(func() {
 		for _, val := range vals {
 			l.append(val)
@@ -183,7 +192,7 @@ func (l *LinkedList) Map(fn MapFn) (nl *LinkedList) {
 
 	l.read(func() {
 		// Iterate through each item
-		l.forEach(nil, func(n *Node, val generic.T) bool {
+		l.forEach(nil, func(n *Node, val Generic) bool {
 			if !l.reporter {
 				nl.append(fn(val))
 			} else {
@@ -207,7 +216,7 @@ func (l *LinkedList) Filter(fn FilterFn) (nl *LinkedList) {
 
 	l.read(func() {
 		// Iterate through each item
-		l.forEach(nil, func(n *Node, val generic.T) bool {
+		l.forEach(nil, func(n *Node, val Generic) bool {
 			if !l.reporter {
 				if fn(val) {
 					nl.append(val)
@@ -226,10 +235,10 @@ func (l *LinkedList) Filter(fn FilterFn) (nl *LinkedList) {
 }
 
 // Reduce will return a reduced value
-func (l *LinkedList) Reduce(fn ReduceFn) (sum generic.T) {
+func (l *LinkedList) Reduce(fn ReduceFn) (sum Generic) {
 	l.read(func() {
 		// Iterate through each item
-		l.forEach(nil, func(_ *Node, val generic.T) bool {
+		l.forEach(nil, func(_ *Node, val Generic) bool {
 			sum = fn(sum, val)
 			return false
 		})
@@ -239,10 +248,10 @@ func (l *LinkedList) Reduce(fn ReduceFn) (sum generic.T) {
 }
 
 // Slice will return a slice of the current linked list
-func (l *LinkedList) Slice() (s []generic.T) {
+func (l *LinkedList) Slice() (s []Generic) {
 	l.read(func() {
-		s = make([]generic.T, 0, l.len)
-		l.forEach(nil, func(_ *Node, val generic.T) bool {
+		s = make([]Generic, 0, l.len)
+		l.forEach(nil, func(_ *Node, val Generic) bool {
 			s = append(s, val)
 			return false
 		})
@@ -252,7 +261,7 @@ func (l *LinkedList) Slice() (s []generic.T) {
 }
 
 // Val will return the value for a given Node
-func (l *LinkedList) Val(n *Node) (val generic.T) {
+func (l *LinkedList) Val(n *Node) (val Generic) {
 	l.read(func() {
 		val = n.val
 	})
@@ -261,7 +270,7 @@ func (l *LinkedList) Val(n *Node) (val generic.T) {
 }
 
 // Update will update the value for a given Node
-func (l *LinkedList) Update(n *Node, val generic.T) {
+func (l *LinkedList) Update(n *Node, val Generic) {
 	l.write(func() {
 		n.val = val
 	})
@@ -276,7 +285,7 @@ func (l *LinkedList) Len() (n int32) {
 	return
 }
 
-func newNode(prev, next *Node, val generic.T) *Node {
+func newNode(prev, next *Node, val Generic) *Node {
 	return &Node{prev, next, val}
 }
 
@@ -285,17 +294,17 @@ type Node struct {
 	prev *Node
 	next *Node
 
-	val generic.T
+	val Generic
 }
 
 // ForEachFn is the format of the function used to call ForEach
-type ForEachFn func(n *Node, val generic.T) (end bool)
+type ForEachFn func(n *Node, val Generic) (end bool)
 
 // MapFn is the format of the function used to call Map
-type MapFn func(val generic.T) (nval generic.T)
+type MapFn func(val Generic) (nval Generic)
 
 // FilterFn is the format of the function used to call Filter
-type FilterFn func(val generic.T) (ok bool)
+type FilterFn func(val Generic) (ok bool)
 
 // ReduceFn is the format of the function used to call Reduce
-type ReduceFn func(acc, val generic.T) (sum generic.T)
+type ReduceFn func(acc, val Generic) (sum Generic)
