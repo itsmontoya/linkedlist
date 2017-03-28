@@ -245,6 +245,22 @@ func (l *LinkedList) Slice() (s []interface{}) {
 	return
 }
 
+// Val will return the value for a given Node
+func (l *LinkedList) Val(n *Node) (val interface{}) {
+	l.read(func() {
+		val = n.val
+	})
+
+	return
+}
+
+// Update will update the value for a given Node
+func (l *LinkedList) Update(n *Node, val interface{}) {
+	l.write(func() {
+		n.val = val
+	})
+}
+
 // Len will return the current lenght of the linked list
 func (l *LinkedList) Len() (n int32) {
 	l.read(func() {
@@ -253,3 +269,27 @@ func (l *LinkedList) Len() (n int32) {
 
 	return
 }
+
+func newNode(prev, next *Node, val interface{}) *Node {
+	return &Node{prev, next, val}
+}
+
+// Node is a value container
+type Node struct {
+	prev *Node
+	next *Node
+
+	val interface{}
+}
+
+// ForEachFn is the format of the function used to call ForEach
+type ForEachFn func(n *Node, val interface{}) (end bool)
+
+// MapFn is the format of the function used to call Map
+type MapFn func(val interface{}) (nval interface{})
+
+// FilterFn is the format of the function used to call Filter
+type FilterFn func(val interface{}) (ok bool)
+
+// ReduceFn is the format of the function used to call Reduce
+type ReduceFn func(acc, val interface{}) (sum interface{})
