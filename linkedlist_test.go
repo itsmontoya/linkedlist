@@ -61,10 +61,10 @@ func testAppend(l *LinkedList, val int, expectValue bool) (err error) {
 	}
 
 	if !expectValue && n != nil {
-		return fmt.Errorf("expected nil, received %v", n.Val())
+		return fmt.Errorf("expected nil, received %v", n.val)
 	}
 
-	if nv := n.Val(); nv.(int) != val {
+	if nv := n.val; nv.(int) != val {
 		return fmt.Errorf("invalid value, expected %d and received %d", val, nv)
 	}
 
@@ -103,7 +103,7 @@ func testMap(l *LinkedList, start int) (err error) {
 	list := l.Map(func(val interface{}) (nval interface{}) {
 		nval = val.(int) * 2
 		return
-	})
+	}).Slice()
 
 	for i := 0; i < len(list); i++ {
 		v := list[i]
@@ -119,7 +119,7 @@ func testMap(l *LinkedList, start int) (err error) {
 func testFilter(l *LinkedList, tgt int, expected bool) (err error) {
 	list := l.Filter(func(val interface{}) (ok bool) {
 		return val.(int) == tgt
-	})
+	}).Slice()
 
 	expectedLen := 1
 	if !expected {
