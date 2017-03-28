@@ -9,7 +9,7 @@ package linkedlist
 import (
 	"sync"
 
-	"github.com/cheekybits/genny"
+	"github.com/cheekybits/genny/generic"
 )
 
 var zero Generic
