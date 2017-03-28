@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	"fmt"
 	"testing"
 
@@ -161,6 +162,15 @@ func BenchmarkIntListAppend(b *testing.B) {
 	b.ReportAllocs()
 }
 
+func BenchmarkStdListAppend(b *testing.B) {
+	var l list.List
+	for i := 0; i < b.N; i++ {
+		l.PushBack(i)
+	}
+
+	b.ReportAllocs()
+}
+
 func BenchmarkSliceAppend(b *testing.B) {
 	s := make([]generic.T, 0, 32)
 	for i := 0; i < b.N; i++ {
@@ -192,6 +202,15 @@ func BenchmarkIntListPrepend(b *testing.B) {
 	var l intlist.LinkedList
 	for i := 0; i < b.N; i++ {
 		l.Prepend(i)
+	}
+
+	b.ReportAllocs()
+}
+
+func BenchmarkStdListPrepend(b *testing.B) {
+	var l list.List
+	for i := 0; i < b.N; i++ {
+		l.PushFront(i)
 	}
 
 	b.ReportAllocs()
