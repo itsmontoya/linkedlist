@@ -2,6 +2,7 @@
 LinkedList is a simple doubly linked-list implementation which offers:
 - Append
 - Prepend
+- Remove
 - ForEach
 - ForEachRev
 - Map
