@@ -11,12 +11,7 @@ func TestLinkedList(t *testing.T) {
 		err error
 	)
 
-	l.Append(0)
-	l.Append(1)
-	l.Append(2)
-	l.Append(3)
-	l.Append(4)
-	l.Append(5)
+	l.Append(0, 1, 2, 3, 4, 5, 6)
 
 	if err = testIteration(&l, 0); err != nil {
 		t.Fatal(err)
@@ -39,13 +34,7 @@ func TestLinkedList(t *testing.T) {
 
 func TestMapFilterReduce(t *testing.T) {
 	var l LinkedList
-	l.Append(0)
-	l.Append(1)
-	l.Append(2)
-	l.Append(3)
-	l.Append(4)
-	l.Append(5)
-	l.Append(6)
+	l.Append(0, 1, 2, 3, 4, 5, 6)
 
 	val := l.Map(testAddOne).Filter(testIsEven).Reduce(testAddInts)
 	if val != 12 {
