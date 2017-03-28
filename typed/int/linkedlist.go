@@ -2,6 +2,8 @@ package linkedlist
 
 import "sync"
 
+var zeroValue int
+
 // LinkedList is a simple doubly-linked list
 type LinkedList struct {
 	mux sync.RWMutex
@@ -77,7 +79,7 @@ func (l *LinkedList) remove(n *Node) {
 
 	n.prev = nil
 	n.next = nil
-	n.val = nil
+	n.val = zeroValue
 }
 
 // forEach will iterate through each Node within the linked list
