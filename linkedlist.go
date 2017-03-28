@@ -121,18 +121,22 @@ func (l *LinkedList) forEachRev(n *Node, fn ForEachFn) (ended bool) {
 }
 
 // Prepend will prepend the list with a value, the reference Node is Returned
-func (l *LinkedList) Prepend(val interface{}) (n *Node) {
+func (l *LinkedList) Prepend(vals ...interface{}) {
 	l.write(func() {
-		n = l.prepend(val)
+		for _, val := range vals {
+			l.prepend(val)
+		}
 	})
 
 	return
 }
 
 // Append will append the list with a value, the reference Node is Returned
-func (l *LinkedList) Append(val interface{}) (n *Node) {
+func (l *LinkedList) Append(vals ...interface{}) {
 	l.write(func() {
-		n = l.append(val)
+		for _, val := range vals {
+			l.append(val)
+		}
 	})
 
 	return

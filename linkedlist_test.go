@@ -11,29 +11,12 @@ func TestLinkedList(t *testing.T) {
 		err error
 	)
 
-	if err = testAppend(&l, 0, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(&l, 1, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(&l, 2, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(&l, 3, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(&l, 4, true); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = testAppend(&l, 5, true); err != nil {
-		t.Fatal(err)
-	}
+	l.Append(0)
+	l.Append(1)
+	l.Append(2)
+	l.Append(3)
+	l.Append(4)
+	l.Append(5)
 
 	if err = testIteration(&l, 0); err != nil {
 		t.Fatal(err)
@@ -68,23 +51,6 @@ func TestMapFilterReduce(t *testing.T) {
 	if val != 12 {
 		t.Fatalf("expected %v and received %v", 12, val)
 	}
-}
-
-func testAppend(l *LinkedList, val int, expectValue bool) (err error) {
-	n := l.Append(val)
-	if !expectValue && n == nil {
-		return
-	}
-
-	if !expectValue && n != nil {
-		return fmt.Errorf("expected nil, received %v", n.val)
-	}
-
-	if nv := n.val; nv.(int) != val {
-		return fmt.Errorf("invalid value, expected %d and received %d", val, nv)
-	}
-
-	return
 }
 
 func testIteration(l *LinkedList, start int) (err error) {
