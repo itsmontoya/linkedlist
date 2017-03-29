@@ -153,7 +153,7 @@ func (l *LinkedList) forEachRev(n *Node, fn ForEachFn) (ended bool) {
 	// Iterate until n equals nil
 	for n != nil {
 		// Set previous node
-		pp = n.prev
+		pn = n.prev
 		// Call provided func
 		if fn(n, n.val) {
 			// Func returned true, return with ended as true
