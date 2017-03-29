@@ -170,6 +170,68 @@ func (l *LinkedList) forEachRev(n *Node, fn ForEachFn) (ended bool) {
 	return false
 }
 
+// mapCopy will return a copied and mapped list
+func (l *LinkedList) mapCopy(fn MapFn) (nl *LinkedList) {
+	nl = &LinkedList{reporter: true}
+	l.read(func() {
+		// Iterate through each item
+		l.forEach(nil, func(n *Node, val Generic) bool {
+			nl.append(fn(val))
+			return false
+		})
+	})
+
+	return
+}
+
+// mapModify will return a copied and mapped list
+func (l *LinkedList) mapModify(fn MapFn) (nl *LinkedList) {
+	nl = l
+	l.write(func() {
+		// Iterate through each item
+		l.forEach(nil, func(n *Node, val Generic) bool {
+			n.val = fn(val)
+			return false
+		})
+	})
+
+	return
+}
+
+// filterCopy will return a copied and filtered list
+func (l *LinkedList) filterCopy(fn FilterFn) (nl *LinkedList) {
+	nl = &LinkedList{reporter: true}
+	l.read(func() {
+		// Iterate through each item
+		l.forEach(nil, func(_ *Node, val Generic) bool {
+			if fn(val) {
+				nl.append(val)
+			}
+
+			return false
+		})
+	})
+
+	return
+}
+
+// filterModify will modify and return filtered list
+func (l *LinkedList) filterModify(fn FilterFn) (nl *LinkedList) {
+	nl = l
+	l.write(func() {
+		// Iterate through each item
+		l.forEach(nil, func(n *Node, val Generic) bool {
+			if !fn(val) {
+				l.remove(n)
+			}
+
+			return false
+		})
+	})
+
+	return
+}
+
 // Prepend will prepend the list with a value, the reference Node is Returned
 func (l *LinkedList) Prepend(vals ...Generic) {
 	l.write(func() {
@@ -221,54 +283,20 @@ func (l *LinkedList) ForEachRev(n *Node, fn ForEachFn) (ended bool) {
 
 // Map will return a mapped list
 func (l *LinkedList) Map(fn MapFn) (nl *LinkedList) {
-	if !l.reporter {
-		nl = &LinkedList{reporter: true}
-	} else {
-		nl = l
+	if l.reporter {
+		return l.mapModify(fn)
 	}
 
-	l.read(func() {
-		// Iterate through each item
-		l.forEach(nil, func(n *Node, val Generic) bool {
-			if !l.reporter {
-				nl.append(fn(val))
-			} else {
-				n.val = fn(val)
-			}
-
-			return false
-		})
-	})
-
-	return
+	return l.mapCopy(fn)
 }
 
 // Filter will return a filtered list
 func (l *LinkedList) Filter(fn FilterFn) (nl *LinkedList) {
-	if !l.reporter {
-		nl = &LinkedList{reporter: true}
-	} else {
-		nl = l
+	if l.reporter {
+		return l.filterModify(fn)
 	}
 
-	l.read(func() {
-		// Iterate through each item
-		l.forEach(nil, func(n *Node, val Generic) bool {
-			if !l.reporter {
-				if fn(val) {
-					nl.append(val)
-				}
-			} else {
-				if !fn(val) {
-					nl.remove(n)
-				}
-			}
-
-			return false
-		})
-	})
-
-	return
+	return l.filterCopy(fn)
 }
 
 // Reduce will return a reduced value
