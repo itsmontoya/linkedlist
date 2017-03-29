@@ -92,8 +92,10 @@ func (l *LinkedList) remove(n *Node) {
 	} else {
 		// We have no previous, which means this is the head node
 		// Set head as the node which proceeds this one
-		l.head = n.next
-		l.head.prev = nil
+		if l.head = n.next; l.head != nil {
+			// Remove the previous value from our new head
+			l.head.prev = nil
+		}
 	}
 
 	if n.next != nil {
@@ -102,9 +104,10 @@ func (l *LinkedList) remove(n *Node) {
 	} else {
 		// We have no next, which means this is the tail node
 		// Set tail as the node which preceeds this one
-		l.tail = n.prev
-		// Remove the next value from our new tail
-		l.tail.next = nil
+		if l.tail = n.prev; l.tail != nil {
+			// Remove the next value from our new tail
+			l.tail.next = nil
+		}
 	}
 
 	// Set node to zero values

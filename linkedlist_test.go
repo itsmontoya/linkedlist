@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	intlist "github.com/itsmontoya/linkedlist/typed/int"
+	"time"
 )
 
 func TestLinkedList(t *testing.T) {
@@ -15,6 +16,9 @@ func TestLinkedList(t *testing.T) {
 	)
 
 	l.Append(0, 1, 2, 3, 4, 5, 6)
+	if l.Len() != 7 {
+		t.Fatalf("invalid length, expected %v and received %v", 7, l.Len())
+	}
 
 	if err = testIteration(&l, 0); err != nil {
 		t.Fatal(err)
@@ -30,6 +34,21 @@ func TestLinkedList(t *testing.T) {
 
 	if err = testReduce(&l, 0); err != nil {
 		t.Fatal(err)
+	}
+
+	l.ForEach(nil, func(n *Node, _ Generic) bool {
+		// Call a new goroutine to remove Node
+		// Node: If this is not a goroutine, it will be a deadlock
+		go l.Remove(n)
+		return false
+	})
+
+	// Give time for goroutines to execute
+	time.Sleep(time.Millisecond * 10)
+
+	// Ensure that all the nodes were properly removed
+	if l.Len() != 0 {
+		t.Fatalf("invalid length, expected %v and received %v", 0, l.Len())
 	}
 
 	return
