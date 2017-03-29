@@ -39,46 +39,45 @@ package main
 import (
 	"fmt"
 
-	"github.com/itsmontoya/linkedlist"
+	"github.com/itsmontoya/linkedlist/typed/int"
 )
 
 func main() {
-	helloWorld()
-	numbers()
+	var l linkedlist.LinkedList
+	// Populate list values
+	l.Append(0, 1, 2, 3, 4, 5, 6)
+
+	// Create new list with map applied
+	nl := l.Map(addOne)
+	// Set mapped value
+	mapped := nl.Slice()
+
+	// Filter new list
+	nl.Filter(isEven)
+
+	// Set filtered and reduced values
+	filtered := nl.Slice()
+	reduced := nl.Reduce(addInts)
+
+	// Note - This can also be done shorthand as such:
+	// val := l.Map(addOne).Filter(isEven).Reduce(addInts)
+
+	fmt.Printf("Original list: %v\n", l.Slice())
+	fmt.Printf("Slice with map applied: %v\n", mapped)
+	fmt.Printf("Slice with map and filter applied: %v\n", filtered)
+	fmt.Printf("Result of reduction: %v\n", reduced)
 }
 
-func helloWorld() {
-	l := linkedlist.New(32, linkedlist.ActionGrow)
-	l.Append("hello")
-	l.Append("world!")
-
-	rv := l.Reduce(func(acc, val interface{}) (sum interface{}) {
-		if accV, ok := acc.(string); ok {
-			return accV + " " + val.(string)
-		}
-
-		return val
-	})
-
-	fmt.Println(rv)
+func addOne(val int) (nval int) {
+	return val + 1
 }
 
-func numbers() {
-	l := linkedlist.New(32, linkedlist.ActionGrow)
-	l.Append(0)
-	l.Append(1)
-	l.Append(2)
-	l.Append(3)
-	l.Append(4)
-
-	for _, val := range l.Map(doubleNumber) {
-		fmt.Println(val)
-	}
+func isEven(val int) (ok bool) {
+	return val%2 == 0
 }
 
-func doubleNumber(val interface{}) (nval interface{}) {
-	nval = val.(int) * 2
-	return
+func addInts(acc, val int) (sum int) {
+	return acc + val
 }
 
 ```
