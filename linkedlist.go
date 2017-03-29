@@ -28,48 +28,58 @@ type LinkedList struct {
 	len      int32
 }
 
+// read lock
 func (l *LinkedList) read(fn func()) {
 	l.mux.RLock()
 	fn()
 	l.mux.RUnlock()
 }
 
+// write lock
 func (l *LinkedList) write(fn func()) {
 	l.mux.Lock()
 	fn()
 	l.mux.Unlock()
 }
 
-// prepend will prepend the list with a value, the reference Node is Returned
+// prepend will prepend the list with a value, the reference node is Returned
 func (l *LinkedList) prepend(val Generic) (n *Node) {
 	n = newNode(nil, l.head, val)
 
 	if l.head != nil {
+		// Head exists, set the previous value to our new node
 		l.head.prev = n
 	}
 
 	if l.tail == nil {
+		// This is the first item, so it will be the head AND the tail
 		l.tail = n
 	}
 
+	// Set head as our new node
 	l.head = n
+	// Increment node count
 	l.len++
 	return
 }
 
-// append will append the list with a value, the reference Node is Returned
+// append will append the list with a value, the reference node is Returned
 func (l *LinkedList) append(val Generic) (n *Node) {
 	n = newNode(l.tail, nil, val)
 
 	if l.tail != nil {
+		// Tail exists, set the next value to our new node
 		l.tail.next = n
 	}
 
 	if l.head == nil {
+		// This is the first item, so it will be the head AND the tail
 		l.head = n
 	}
 
+	// Set tail as our new node
 	l.tail = n
+	// Increment node count
 	l.len++
 	return
 }
@@ -77,67 +87,90 @@ func (l *LinkedList) append(val Generic) (n *Node) {
 // remove will remove a node from a list
 func (l *LinkedList) remove(n *Node) {
 	if n.prev != nil {
+		// Set previous node's next as our current next node
 		n.prev.next = n.next
 	} else {
+		// We have no previous, which means this is the head node
+		// Set head as the node which proceeds this one
 		l.head = n.next
 		l.head.prev = nil
 	}
 
 	if n.next != nil {
+		// Set next node's previous as our current previous node
 		n.next.prev = n.prev
 	} else {
+		// We have no next, which means this is the tail node
+		// Set tail as the node which preceeds this one
 		l.tail = n.prev
+		// Remove the next value from our new tail
 		l.tail.next = nil
 	}
 
+	// Set node to zero values
 	n.prev = nil
 	n.next = nil
 	n.val = zero
+	// Decrement node count
+	l.len--
 }
 
-// forEach will iterate through each Node within the linked list
+// forEach will iterate through each node within the linked list
 func (l *LinkedList) forEach(n *Node, fn ForEachFn) (ended bool) {
-	var nn *Node
 	if n == nil {
-		// Provided Node is nil, set to head
+		// Provided node is nil, set to head
 		n = l.head
 	}
 
+	// Next node
+	var nn *Node
+	// Iterate until n equals nil
 	for n != nil {
+		// Set next node
 		nn = n.next
+		// Call provided func
 		if fn(n, n.val) {
-			ended = true
-			return
+			// Func returned true, return with ended as true
+			return true
 		}
 
+		// Set n as the next node
 		n = nn
 	}
 
-	return
+	return false
 }
 
-// forEachRev will iterate through each Node within the linked list in reverse
+// forEachRev will iterate through each node within the linked list in reverse
 func (l *LinkedList) forEachRev(n *Node, fn ForEachFn) (ended bool) {
 	if n == nil {
-		// Provided Node is nil, set to tail
+		// Provided node is nil, set to tail
 		n = l.tail
 	}
 
+	// Previous node
+	var pn *Node
+	// Iterate until n equals nil
 	for n != nil {
+		// Set previous node
+		pp = n.prev
+		// Call provided func
 		if fn(n, n.val) {
-			ended = true
-			return
+			// Func returned true, return with ended as true
+			return true
 		}
 
-		n = n.prev
+		// Set n as the previous node
+		n = pn
 	}
 
-	return
+	return false
 }
 
 // Prepend will prepend the list with a value, the reference Node is Returned
 func (l *LinkedList) Prepend(vals ...Generic) {
 	l.write(func() {
+		// Iterate through provided values
 		for _, val := range vals {
 			l.prepend(val)
 		}
@@ -149,6 +182,7 @@ func (l *LinkedList) Prepend(vals ...Generic) {
 // Append will append the list with a value, the reference Node is Returned
 func (l *LinkedList) Append(vals ...Generic) {
 	l.write(func() {
+		// Iterate through provided values
 		for _, val := range vals {
 			l.append(val)
 		}
@@ -164,7 +198,7 @@ func (l *LinkedList) Remove(n *Node) {
 	})
 }
 
-// ForEach will iterate through each Node within the linked list
+// ForEach will iterate through each node within the linked list
 func (l *LinkedList) ForEach(n *Node, fn ForEachFn) (ended bool) {
 	l.read(func() {
 		ended = l.forEach(n, fn)
@@ -173,7 +207,7 @@ func (l *LinkedList) ForEach(n *Node, fn ForEachFn) (ended bool) {
 	return
 }
 
-// ForEachRev will iterate through each Node within the linked list in reverse
+// ForEachRev will iterate through each node within the linked list in reverse
 func (l *LinkedList) ForEachRev(n *Node, fn ForEachFn) (ended bool) {
 	l.read(func() {
 		ended = l.forEachRev(n, fn)
@@ -260,7 +294,7 @@ func (l *LinkedList) Slice() (s []Generic) {
 	return
 }
 
-// Val will return the value for a given Node
+// Val will return the value for a given node
 func (l *LinkedList) Val(n *Node) (val Generic) {
 	l.read(func() {
 		val = n.val
@@ -269,7 +303,7 @@ func (l *LinkedList) Val(n *Node) (val Generic) {
 	return
 }
 
-// Update will update the value for a given Node
+// Update will update the value for a given node
 func (l *LinkedList) Update(n *Node, val Generic) {
 	l.write(func() {
 		n.val = val
