@@ -14,24 +14,24 @@ LinkedList is a simple doubly linked-list implementation which offers:
 # go test --bench=.
 
 # Generic LinkedList
-BenchmarkListAppend-4           10000000               120 ns/op              40 B/op          2 allocs/op
-BenchmarkListPrepend-4          10000000               118 ns/op              40 B/op          2 allocs/op
+BenchmarkListAppend-4          10000000         120 ns/op          40 B/op      2 allocs/op
+BenchmarkListPrepend-4         10000000         118 ns/op          40 B/op      2 allocs/op
 
 # Typed (int) LinkedList
-BenchmarkIntListAppend-4        20000000               100 ns/op              32 B/op          1 allocs/op
-BenchmarkIntListPrepend-4       20000000                93.2 ns/op            32 B/op          1 allocs/op
+BenchmarkIntListAppend-4       20000000         100 ns/op          32 B/op      1 allocs/op
+BenchmarkIntListPrepend-4      20000000        93.2 ns/op          32 B/op      1 allocs/op
 
 # Standard library
-BenchmarkStdListAppend-4        10000000               238 ns/op              56 B/op          2 allocs/op
-BenchmarkStdListPrepend-4       10000000               238 ns/op              56 B/op          2 allocs/op
+BenchmarkStdListAppend-4       10000000         238 ns/op          56 B/op      2 allocs/op
+BenchmarkStdListPrepend-4      10000000         238 ns/op          56 B/op      2 allocs/op
 
 # Slice
-BenchmarkSliceAppend-4           3000000               430 ns/op              98 B/op          1 allocs/op
-BenchmarkSlicePrepend-4            30000            369399 ns/op          243917 B/op          2 allocs/op
+BenchmarkSliceAppend-4          3000000         430 ns/op          98 B/op      1 allocs/op
+BenchmarkSlicePrepend-4           30000      369399 ns/op      243917 B/op      2 allocs/op
 
 # Map
-BenchmarkMapAppend-4             5000000               346 ns/op             106 B/op          1 allocs/op
-BenchmarkMapPrepend-4            5000000               358 ns/op             106 B/op          1 allocs/op
+BenchmarkMapAppend-4            5000000         346 ns/op         106 B/op      1 allocs/op
+BenchmarkMapPrepend-4           5000000         358 ns/op         106 B/op      1 allocs/op
 ```
 
 ## Usage
