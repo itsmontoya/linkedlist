@@ -6,11 +6,7 @@ package linkedlist
 //go:generate genny -in=$GOFILE -out=typed/string/$GOFILE gen "Generic=string"
 //go:generate genny -in=$GOFILE -out=typed/byteslice/$GOFILE gen "Generic=[]byte"
 
-import (
-	"sync"
-
-	"github.com/cheekybits/genny/generic"
-)
+import "github.com/cheekybits/genny/generic"
 
 var zero Generic
 
@@ -19,27 +15,11 @@ type Generic generic.Type
 
 // LinkedList is a simple doubly-linked list
 type LinkedList struct {
-	mux sync.RWMutex
-
 	head *Node
 	tail *Node
 
 	reporter bool
 	len      int32
-}
-
-// read lock
-func (l *LinkedList) read(fn func()) {
-	l.mux.RLock()
-	fn()
-	l.mux.RUnlock()
-}
-
-// write lock
-func (l *LinkedList) write(fn func()) {
-	l.mux.Lock()
-	fn()
-	l.mux.Unlock()
 }
 
 // prepend will prepend the list with a value, the reference node is Returned
@@ -84,8 +64,82 @@ func (l *LinkedList) append(val Generic) (n *Node) {
 	return
 }
 
-// remove will remove a node from a list
-func (l *LinkedList) remove(n *Node) {
+// mapCopy will return a copied and mapped list
+func (l *LinkedList) mapCopy(fn MapFn) (nl *LinkedList) {
+	nl = &LinkedList{reporter: true}
+	// Iterate through each item
+	l.ForEach(nil, func(n *Node, val Generic) bool {
+		nl.append(fn(val))
+		return false
+	})
+
+	return
+}
+
+// mapModify will return a copied and mapped list
+func (l *LinkedList) mapModify(fn MapFn) (nl *LinkedList) {
+	nl = l
+	// Iterate through each item
+	l.ForEach(nil, func(n *Node, val Generic) bool {
+		n.val = fn(val)
+		return false
+	})
+
+	return
+}
+
+// filterCopy will return a copied and filtered list
+func (l *LinkedList) filterCopy(fn FilterFn) (nl *LinkedList) {
+	nl = &LinkedList{reporter: true}
+	// Iterate through each item
+	l.ForEach(nil, func(_ *Node, val Generic) bool {
+		if fn(val) {
+			nl.append(val)
+		}
+
+		return false
+	})
+
+	return
+}
+
+// filterModify will modify and return filtered list
+func (l *LinkedList) filterModify(fn FilterFn) (nl *LinkedList) {
+	nl = l
+	// Iterate through each item
+	l.ForEach(nil, func(n *Node, val Generic) bool {
+		if !fn(val) {
+			l.Remove(n)
+		}
+
+		return false
+	})
+
+	return
+}
+
+// Prepend will prepend the list with a value, the reference Node is Returned
+func (l *LinkedList) Prepend(vals ...Generic) {
+	// Iterate through provided values
+	for _, val := range vals {
+		l.prepend(val)
+	}
+
+	return
+}
+
+// Append will append the list with a value, the reference Node is Returned
+func (l *LinkedList) Append(vals ...Generic) {
+	// Iterate through provided values
+	for _, val := range vals {
+		l.append(val)
+	}
+
+	return
+}
+
+// Remove will remove a node from a list
+func (l *LinkedList) Remove(n *Node) {
 	if n.prev != nil {
 		// Set previous node's next as our current next node
 		n.prev.next = n.next
@@ -118,8 +172,8 @@ func (l *LinkedList) remove(n *Node) {
 	l.len--
 }
 
-// forEach will iterate through each node within the linked list
-func (l *LinkedList) forEach(n *Node, fn ForEachFn) (ended bool) {
+// ForEach will iterate through each node within the linked list
+func (l *LinkedList) ForEach(n *Node, fn ForEachFn) (ended bool) {
 	if n == nil {
 		// Provided node is nil, set to head
 		n = l.head
@@ -144,8 +198,8 @@ func (l *LinkedList) forEach(n *Node, fn ForEachFn) (ended bool) {
 	return false
 }
 
-// forEachRev will iterate through each node within the linked list in reverse
-func (l *LinkedList) forEachRev(n *Node, fn ForEachFn) (ended bool) {
+// ForEachRev will iterate through each node within the linked list in reverse
+func (l *LinkedList) ForEachRev(n *Node, fn ForEachFn) (ended bool) {
 	if n == nil {
 		// Provided node is nil, set to tail
 		n = l.tail
@@ -170,117 +224,6 @@ func (l *LinkedList) forEachRev(n *Node, fn ForEachFn) (ended bool) {
 	return false
 }
 
-// mapCopy will return a copied and mapped list
-func (l *LinkedList) mapCopy(fn MapFn) (nl *LinkedList) {
-	nl = &LinkedList{reporter: true}
-	l.read(func() {
-		// Iterate through each item
-		l.forEach(nil, func(n *Node, val Generic) bool {
-			nl.append(fn(val))
-			return false
-		})
-	})
-
-	return
-}
-
-// mapModify will return a copied and mapped list
-func (l *LinkedList) mapModify(fn MapFn) (nl *LinkedList) {
-	nl = l
-	l.write(func() {
-		// Iterate through each item
-		l.forEach(nil, func(n *Node, val Generic) bool {
-			n.val = fn(val)
-			return false
-		})
-	})
-
-	return
-}
-
-// filterCopy will return a copied and filtered list
-func (l *LinkedList) filterCopy(fn FilterFn) (nl *LinkedList) {
-	nl = &LinkedList{reporter: true}
-	l.read(func() {
-		// Iterate through each item
-		l.forEach(nil, func(_ *Node, val Generic) bool {
-			if fn(val) {
-				nl.append(val)
-			}
-
-			return false
-		})
-	})
-
-	return
-}
-
-// filterModify will modify and return filtered list
-func (l *LinkedList) filterModify(fn FilterFn) (nl *LinkedList) {
-	nl = l
-	l.write(func() {
-		// Iterate through each item
-		l.forEach(nil, func(n *Node, val Generic) bool {
-			if !fn(val) {
-				l.remove(n)
-			}
-
-			return false
-		})
-	})
-
-	return
-}
-
-// Prepend will prepend the list with a value, the reference Node is Returned
-func (l *LinkedList) Prepend(vals ...Generic) {
-	l.write(func() {
-		// Iterate through provided values
-		for _, val := range vals {
-			l.prepend(val)
-		}
-	})
-
-	return
-}
-
-// Append will append the list with a value, the reference Node is Returned
-func (l *LinkedList) Append(vals ...Generic) {
-	l.write(func() {
-		// Iterate through provided values
-		for _, val := range vals {
-			l.append(val)
-		}
-	})
-
-	return
-}
-
-// Remove will remove a node from a list
-func (l *LinkedList) Remove(n *Node) {
-	l.write(func() {
-		l.remove(n)
-	})
-}
-
-// ForEach will iterate through each node within the linked list
-func (l *LinkedList) ForEach(n *Node, fn ForEachFn) (ended bool) {
-	l.read(func() {
-		ended = l.forEach(n, fn)
-	})
-
-	return
-}
-
-// ForEachRev will iterate through each node within the linked list in reverse
-func (l *LinkedList) ForEachRev(n *Node, fn ForEachFn) (ended bool) {
-	l.read(func() {
-		ended = l.forEachRev(n, fn)
-	})
-
-	return
-}
-
 // Map will return a mapped list
 func (l *LinkedList) Map(fn MapFn) (nl *LinkedList) {
 	if l.reporter {
@@ -301,12 +244,10 @@ func (l *LinkedList) Filter(fn FilterFn) (nl *LinkedList) {
 
 // Reduce will return a reduced value
 func (l *LinkedList) Reduce(fn ReduceFn) (sum Generic) {
-	l.read(func() {
-		// Iterate through each item
-		l.forEach(nil, func(_ *Node, val Generic) bool {
-			sum = fn(sum, val)
-			return false
-		})
+	// Iterate through each item
+	l.ForEach(nil, func(_ *Node, val Generic) bool {
+		sum = fn(sum, val)
+		return false
 	})
 
 	return
@@ -314,12 +255,10 @@ func (l *LinkedList) Reduce(fn ReduceFn) (sum Generic) {
 
 // Slice will return a slice of the current linked list
 func (l *LinkedList) Slice() (s []Generic) {
-	l.read(func() {
-		s = make([]Generic, 0, l.len)
-		l.forEach(nil, func(_ *Node, val Generic) bool {
-			s = append(s, val)
-			return false
-		})
+	s = make([]Generic, 0, l.len)
+	l.ForEach(nil, func(_ *Node, val Generic) bool {
+		s = append(s, val)
+		return false
 	})
 
 	return
@@ -327,27 +266,17 @@ func (l *LinkedList) Slice() (s []Generic) {
 
 // Val will return the value for a given node
 func (l *LinkedList) Val(n *Node) (val Generic) {
-	l.read(func() {
-		val = n.val
-	})
-
-	return
+	return n.val
 }
 
 // Update will update the value for a given node
 func (l *LinkedList) Update(n *Node, val Generic) {
-	l.write(func() {
-		n.val = val
-	})
+	n.val = val
 }
 
 // Len will return the current lenght of the linked list
 func (l *LinkedList) Len() (n int32) {
-	l.read(func() {
-		n = l.len
-	})
-
-	return
+	return l.len
 }
 
 func newNode(prev, next *Node, val Generic) *Node {
