@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	testFilterVal []GenericVal
+	testFilterVal    []GenericVal
+	testFilterIntVal []int
 )
 
 func TestLinkedList(t *testing.T) {
@@ -197,6 +198,20 @@ func BenchmarkIntListAppend(b *testing.B) {
 	b.ReportAllocs()
 }
 
+func BenchmarkIntListFilter(b *testing.B) {
+	var l intlist.LinkedList
+	for i := 0; i < b.N; i++ {
+		l.Append(i)
+	}
+	b.ResetTimer()
+
+	testFilterIntVal = l.Filter(func(val int) bool {
+		return val%2 == 0
+	}).Slice()
+
+	b.ReportAllocs()
+}
+
 func BenchmarkStdListAppend(b *testing.B) {
 	var l list.List
 	for i := 0; i < b.N; i++ {
@@ -284,5 +299,23 @@ func BenchmarkMapPrepend(b *testing.B) {
 		s[i] = i
 	}
 
+	b.ReportAllocs()
+}
+
+func BenchmarkMapFilter(b *testing.B) {
+	m := make(map[int]GenericVal, b.N)
+	for i := 0; i < b.N; i++ {
+		m[i] = i
+	}
+	b.ResetTimer()
+
+	var ns []GenericVal
+	for _, val := range m {
+		if val.(int)%2 == 0 {
+			ns = append(ns, val)
+		}
+	}
+
+	testFilterVal = ns
 	b.ReportAllocs()
 }
