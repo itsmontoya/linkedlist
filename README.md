@@ -1,4 +1,4 @@
-# LinkedList [![GoDoc](https://godoc.org/github.com/itsmontoya/linkedlist?status.svg)](https://godoc.org/github.com/itsmontoya/linkedlist) ![Status](https://img.shields.io/badge/status-alpha-red.svg)
+# LinkedList [![GoDoc](https://godoc.org/github.com/itsmontoya/linkedlist?status.svg)](https://godoc.org/github.com/itsmontoya/linkedlist) ![Status](https://img.shields.io/badge/status-alpha-red.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/itsmontoya/linkedlist)](https://goreportcard.com/report/github.com/itsmontoya/linkedlist)
 LinkedList is a simple doubly linked-list implementation which offers:
 - Append
 - Prepend
