@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+var (
+	testFilterVal []GenericVal
+)
+
 func TestLinkedList(t *testing.T) {
 	var (
 		l   LinkedList
@@ -170,6 +174,20 @@ func BenchmarkListAppend(b *testing.B) {
 	b.ReportAllocs()
 }
 
+func BenchmarkListFilter(b *testing.B) {
+	var l LinkedList
+	for i := 0; i < b.N; i++ {
+		l.Append(i)
+	}
+	b.ResetTimer()
+
+	testFilterVal = l.Filter(func(val GenericVal) bool {
+		return val.(int)%2 == 0
+	}).Slice()
+
+	b.ReportAllocs()
+}
+
 func BenchmarkIntListAppend(b *testing.B) {
 	var l intlist.LinkedList
 	for i := 0; i < b.N; i++ {
@@ -239,6 +257,24 @@ func BenchmarkSlicePrepend(b *testing.B) {
 		s = append([]GenericVal{i}, s...)
 	}
 
+	b.ReportAllocs()
+}
+
+func BenchmarkSliceFilter(b *testing.B) {
+	s := make([]GenericVal, 0, b.N)
+	for i := 0; i < b.N; i++ {
+		s = append(s, i)
+	}
+	b.ResetTimer()
+
+	var ns []GenericVal
+	for _, val := range s {
+		if val.(int)%2 == 0 {
+			ns = append(ns, val)
+		}
+	}
+
+	testFilterVal = ns
 	b.ReportAllocs()
 }
 
