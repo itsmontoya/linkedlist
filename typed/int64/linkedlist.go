@@ -150,7 +150,7 @@ func (l *LinkedList) Remove(n *Node) {
 		n.next.prev = n.prev
 	} else {
 		// We have no next, which means this is the tail node
-		// Set tail as the node which preceeds this one
+		// Set tail as the node which precedes this one
 		if l.tail = n.prev; l.tail != nil {
 			// Remove the next value from our new tail
 			l.tail.next = nil
@@ -267,7 +267,7 @@ func (l *LinkedList) Update(n *Node, val int64) {
 	n.val = val
 }
 
-// Len will return the current lenght of the linked list
+// Len will return the current length of the linked list
 func (l *LinkedList) Len() (n int32) {
 	return l.len
 }
