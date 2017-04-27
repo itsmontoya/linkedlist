@@ -4,7 +4,10 @@
 
 package linkedlist
 
-var zero int64
+var (
+	zeroVal int64
+	zeroSum int64
+)
 
 // LinkedList is a simple doubly-linked list
 type LinkedList struct {
@@ -160,7 +163,7 @@ func (l *LinkedList) Remove(n *Node) {
 	// Set node to zero values
 	n.prev = nil
 	n.next = nil
-	n.val = zero
+	n.val = zeroVal
 	// Decrement node count
 	l.len--
 }
