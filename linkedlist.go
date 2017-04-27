@@ -1,17 +1,23 @@
 package linkedlist
 
-//go:generate genny -in=$GOFILE -out=typed/int/$GOFILE gen "Generic=int"
-//go:generate genny -in=$GOFILE -out=typed/int32/$GOFILE gen "Generic=int32"
-//go:generate genny -in=$GOFILE -out=typed/int64/$GOFILE gen "Generic=int64"
-//go:generate genny -in=$GOFILE -out=typed/string/$GOFILE gen "Generic=string"
-//go:generate genny -in=$GOFILE -out=typed/byteslice/$GOFILE gen "Generic=[]byte"
+//go:generate genny -in=$GOFILE -out=typed/int/$GOFILE gen "GenericVal=int GenericSum=int"
+//go:generate genny -in=$GOFILE -out=typed/int32/$GOFILE gen "GenericVal=int32 GenericSum=int32"
+//go:generate genny -in=$GOFILE -out=typed/int64/$GOFILE gen "GenericVal=int64 GenericSum=int64"
+//go:generate genny -in=$GOFILE -out=typed/string/$GOFILE gen "GenericVal=string GenericSum=string"
+//go:generate genny -in=$GOFILE -out=typed/byteslice/$GOFILE gen "GenericVal=[]byte GenericSum=[]byte"
 
 import "github.com/cheekybits/genny/generic"
 
-var zero Generic
+var (
+	zeroVal GenericVal
+	zeroSum GenericSum
+)
 
-// Generic is a generic value type
-type Generic generic.Type
+// GenericVal is a generic value type
+type GenericVal generic.Type
+
+// GenericSum is a generic sum type used for reducing
+type GenericSum generic.Type
 
 // LinkedList is a simple doubly-linked list
 type LinkedList struct {
@@ -23,7 +29,7 @@ type LinkedList struct {
 }
 
 // prepend will prepend the list with a value, the reference node is Returned
-func (l *LinkedList) prepend(val Generic) (n *Node) {
+func (l *LinkedList) prepend(val GenericVal) (n *Node) {
 	n = newNode(nil, l.head, val)
 
 	if l.head != nil {
@@ -44,7 +50,7 @@ func (l *LinkedList) prepend(val Generic) (n *Node) {
 }
 
 // append will append the list with a value, the reference node is Returned
-func (l *LinkedList) append(val Generic) (n *Node) {
+func (l *LinkedList) append(val GenericVal) (n *Node) {
 	n = newNode(l.tail, nil, val)
 
 	if l.tail != nil {
@@ -68,7 +74,7 @@ func (l *LinkedList) append(val Generic) (n *Node) {
 func (l *LinkedList) mapCopy(fn MapFn) (nl *LinkedList) {
 	nl = &LinkedList{reporter: true}
 	// Iterate through each item
-	l.ForEach(nil, func(n *Node, val Generic) bool {
+	l.ForEach(nil, func(n *Node, val GenericVal) bool {
 		nl.append(fn(val))
 		return false
 	})
@@ -80,7 +86,7 @@ func (l *LinkedList) mapCopy(fn MapFn) (nl *LinkedList) {
 func (l *LinkedList) mapModify(fn MapFn) (nl *LinkedList) {
 	nl = l
 	// Iterate through each item
-	l.ForEach(nil, func(n *Node, val Generic) bool {
+	l.ForEach(nil, func(n *Node, val GenericVal) bool {
 		n.val = fn(val)
 		return false
 	})
@@ -92,7 +98,7 @@ func (l *LinkedList) mapModify(fn MapFn) (nl *LinkedList) {
 func (l *LinkedList) filterCopy(fn FilterFn) (nl *LinkedList) {
 	nl = &LinkedList{reporter: true}
 	// Iterate through each item
-	l.ForEach(nil, func(_ *Node, val Generic) bool {
+	l.ForEach(nil, func(_ *Node, val GenericVal) bool {
 		if fn(val) {
 			nl.append(val)
 		}
@@ -107,7 +113,7 @@ func (l *LinkedList) filterCopy(fn FilterFn) (nl *LinkedList) {
 func (l *LinkedList) filterModify(fn FilterFn) (nl *LinkedList) {
 	nl = l
 	// Iterate through each item
-	l.ForEach(nil, func(n *Node, val Generic) bool {
+	l.ForEach(nil, func(n *Node, val GenericVal) bool {
 		if !fn(val) {
 			l.Remove(n)
 		}
@@ -119,7 +125,7 @@ func (l *LinkedList) filterModify(fn FilterFn) (nl *LinkedList) {
 }
 
 // Prepend will prepend the list with a value, the reference Node is Returned
-func (l *LinkedList) Prepend(vals ...Generic) {
+func (l *LinkedList) Prepend(vals ...GenericVal) {
 	// Iterate through provided values
 	for _, val := range vals {
 		l.prepend(val)
@@ -129,7 +135,7 @@ func (l *LinkedList) Prepend(vals ...Generic) {
 }
 
 // Append will append the list with a value, the reference Node is Returned
-func (l *LinkedList) Append(vals ...Generic) {
+func (l *LinkedList) Append(vals ...GenericVal) {
 	// Iterate through provided values
 	for _, val := range vals {
 		l.append(val)
@@ -167,7 +173,7 @@ func (l *LinkedList) Remove(n *Node) {
 	// Set node to zero values
 	n.prev = nil
 	n.next = nil
-	n.val = zero
+	n.val = zeroVal
 	// Decrement node count
 	l.len--
 }
@@ -243,9 +249,9 @@ func (l *LinkedList) Filter(fn FilterFn) (nl *LinkedList) {
 }
 
 // Reduce will return a reduced value
-func (l *LinkedList) Reduce(fn ReduceFn) (sum Generic) {
+func (l *LinkedList) Reduce(fn ReduceFn) (sum GenericSum) {
 	// Iterate through each item
-	l.ForEach(nil, func(_ *Node, val Generic) bool {
+	l.ForEach(nil, func(_ *Node, val GenericVal) bool {
 		sum = fn(sum, val)
 		return false
 	})
@@ -254,9 +260,9 @@ func (l *LinkedList) Reduce(fn ReduceFn) (sum Generic) {
 }
 
 // Slice will return a slice of the current linked list
-func (l *LinkedList) Slice() (s []Generic) {
-	s = make([]Generic, 0, l.len)
-	l.ForEach(nil, func(_ *Node, val Generic) bool {
+func (l *LinkedList) Slice() (s []GenericVal) {
+	s = make([]GenericVal, 0, l.len)
+	l.ForEach(nil, func(_ *Node, val GenericVal) bool {
 		s = append(s, val)
 		return false
 	})
@@ -265,12 +271,12 @@ func (l *LinkedList) Slice() (s []Generic) {
 }
 
 // Val will return the value for a given node
-func (l *LinkedList) Val(n *Node) (val Generic) {
+func (l *LinkedList) Val(n *Node) (val GenericVal) {
 	return n.val
 }
 
 // Update will update the value for a given node
-func (l *LinkedList) Update(n *Node, val Generic) {
+func (l *LinkedList) Update(n *Node, val GenericVal) {
 	n.val = val
 }
 
@@ -279,7 +285,7 @@ func (l *LinkedList) Len() (n int32) {
 	return l.len
 }
 
-func newNode(prev, next *Node, val Generic) *Node {
+func newNode(prev, next *Node, val GenericVal) *Node {
 	return &Node{prev, next, val}
 }
 
@@ -288,17 +294,17 @@ type Node struct {
 	prev *Node
 	next *Node
 
-	val Generic
+	val GenericVal
 }
 
 // ForEachFn is the format of the function used to call ForEach
-type ForEachFn func(n *Node, val Generic) (end bool)
+type ForEachFn func(n *Node, val GenericVal) (end bool)
 
 // MapFn is the format of the function used to call Map
-type MapFn func(val Generic) (nval Generic)
+type MapFn func(val GenericVal) (nval GenericVal)
 
 // FilterFn is the format of the function used to call Filter
-type FilterFn func(val Generic) (ok bool)
+type FilterFn func(val GenericVal) (ok bool)
 
 // ReduceFn is the format of the function used to call Reduce
-type ReduceFn func(acc, val Generic) (sum Generic)
+type ReduceFn func(acc, val GenericVal) (sum GenericSum)

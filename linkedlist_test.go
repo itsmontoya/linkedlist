@@ -36,7 +36,7 @@ func TestLinkedList(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	l.ForEach(nil, func(n *Node, _ Generic) bool {
+	l.ForEach(nil, func(n *Node, _ GenericVal) bool {
 		// Call a new goroutine to remove Node
 		// Node: If this is not a goroutine, it will be a deadlock
 		go l.Remove(n)
@@ -67,7 +67,7 @@ func TestMapFilterReduce(t *testing.T) {
 func testIteration(l *LinkedList, start int) (err error) {
 	cnt := start
 
-	l.ForEach(nil, func(_ *Node, val Generic) bool {
+	l.ForEach(nil, func(_ *Node, val GenericVal) bool {
 		if val.(int) != cnt {
 			err = fmt.Errorf("invalid value, expected %d and received %d", cnt, val)
 			return true
@@ -79,7 +79,7 @@ func testIteration(l *LinkedList, start int) (err error) {
 
 	cnt--
 
-	l.ForEachRev(nil, func(_ *Node, val Generic) bool {
+	l.ForEachRev(nil, func(_ *Node, val GenericVal) bool {
 		if val.(int) != cnt {
 			err = fmt.Errorf("invalid value, expected %d and received %d", cnt, val)
 			return true
@@ -93,7 +93,7 @@ func testIteration(l *LinkedList, start int) (err error) {
 }
 
 func testMap(l *LinkedList, start int) (err error) {
-	list := l.Map(func(val Generic) (nval Generic) {
+	list := l.Map(func(val GenericVal) (nval GenericVal) {
 		nval = val.(int) * 2
 		return
 	}).Slice()
@@ -110,7 +110,7 @@ func testMap(l *LinkedList, start int) (err error) {
 }
 
 func testFilter(l *LinkedList, tgt int, expected bool) (err error) {
-	list := l.Filter(func(val Generic) (ok bool) {
+	list := l.Filter(func(val GenericVal) (ok bool) {
 		return val.(int) == tgt
 	}).Slice()
 
@@ -129,7 +129,7 @@ func testFilter(l *LinkedList, tgt int, expected bool) (err error) {
 func testReduce(l *LinkedList, start int) (err error) {
 	var cv int
 	len := int(l.Len())
-	val := l.Reduce(func(acc, val Generic) (sum Generic) {
+	val := l.Reduce(func(acc, val GenericVal) (sum GenericSum) {
 		accV, _ := acc.(int)
 		sum = accV + val.(int)
 		return
@@ -146,16 +146,16 @@ func testReduce(l *LinkedList, start int) (err error) {
 	return
 }
 
-func testAddOne(val Generic) (nval Generic) {
+func testAddOne(val GenericVal) (nval GenericVal) {
 	nval = val.(int) + 1
 	return
 }
 
-func testIsEven(val Generic) (ok bool) {
+func testIsEven(val GenericVal) (ok bool) {
 	return val.(int)%2 == 0
 }
 
-func testAddInts(acc, val Generic) (sum Generic) {
+func testAddInts(acc, val GenericVal) (sum GenericSum) {
 	accV, _ := acc.(int)
 	sum = accV + val.(int)
 	return
@@ -189,7 +189,7 @@ func BenchmarkStdListAppend(b *testing.B) {
 }
 
 func BenchmarkSliceAppend(b *testing.B) {
-	s := make([]Generic, 0, 32)
+	s := make([]GenericVal, 0, 32)
 	for i := 0; i < b.N; i++ {
 		s = append(s, i)
 	}
@@ -198,7 +198,7 @@ func BenchmarkSliceAppend(b *testing.B) {
 }
 
 func BenchmarkMapAppend(b *testing.B) {
-	s := make(map[int]Generic, 32)
+	s := make(map[int]GenericVal, 32)
 	for i := 0; i < b.N; i++ {
 		s[i] = i
 	}
@@ -234,16 +234,16 @@ func BenchmarkStdListPrepend(b *testing.B) {
 }
 
 func BenchmarkSlicePrepend(b *testing.B) {
-	s := make([]Generic, 0, 32)
+	s := make([]GenericVal, 0, 32)
 	for i := 0; i < b.N; i++ {
-		s = append([]Generic{i}, s...)
+		s = append([]GenericVal{i}, s...)
 	}
 
 	b.ReportAllocs()
 }
 
 func BenchmarkMapPrepend(b *testing.B) {
-	s := make(map[int]Generic, 32)
+	s := make(map[int]GenericVal, 32)
 	for i := 0; i < b.N; i++ {
 		s[i] = i
 	}
