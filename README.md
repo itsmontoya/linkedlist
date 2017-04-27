@@ -9,6 +9,21 @@ LinkedList is a simple doubly linked-list implementation which offers:
 - Filter
 - Reduce
 
+## Aren't linked lists bad?
+It is true that in many situations, there is a better data structure to use than a linked list. While this is the case for many scenarios, it is not the case for ALL scenarios. Over the years, I've found situations where linked lists have proven extremely useful:
+
+### I need to store data, and I'm not sure if the size beforehand
+When you are unsure of your slice size, you have two options:
+- Pre-allocate: Which often leads to over-allocating
+- Start with empty slice: Causes lots of memcpy and allocations
+
+With a linked list, you can grow your data structure as needed. As soon as the size has stabilized, the linked list can efficiently be converted to a slice.
+
+### I need to prepend a lot
+When you need to deal with lots of prepends, the common approach is to append your slice and reverse at the end. There are some caveats with this approach:
+- You must wait to access your data until the appending is complete (so reverse can be called)
+- You will encounter lots of memcpy during the reverse process, especially if your list is quite large
+
 ## Benchmarks
 ```bash
 # go test --bench=.
